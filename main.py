@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 from scipy.integrate import odeint
+from scipy.integrate import ode
 import numpy.linalg as la
 import pdb
 import matplotlib.pyplot as plt
@@ -22,7 +23,7 @@ class UAV(object):
     self.kv = 5.6*self.m;# position gains
     print('initialized')
 
-  def dydt(self, X, t):
+  def dydt(self, t, X):
     R = np.reshape(X[0:9],(3,3));  # rotation from body to inertial
     W = X[9:12];   # angular rate
     x = X[12:15];  # position
@@ -152,7 +153,18 @@ if __name__ == "__main__":
   v0 = [0.,0.,0.];   # initial velocity
   R0v = np.array(R0).flatten().T
   y0 = np.concatenate((R0v, W0,x0,v0))
-  sim = odeint(uav_t.dydt,y0,t)
+  # sim = odeint(uav_t.dydt,y0,t)
+
+  solver = ode(uav_t.dydt)
+  solver.set_integrator('dopri5').set_initial_value(y0, 0)
+  dt = 1./100
+  sim = []
+  while solver.successful() and solver.t < t_max:
+    solver.integrate(solver.t+dt)
+    sim.append(solver.y)
+
+  sim = np.array(sim)
+
   # fig, ax = plt.subplots()
   fig = plt.figure()
   ax = p3.Axes3D(fig)
