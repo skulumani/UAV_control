@@ -1,15 +1,17 @@
 #!/usr/bin/env python
-from __future__ import print_function, division
+from __future__ import print_function, division, absolute_import
 import numpy as np
 from scipy.integrate import odeint
 from scipy.integrate import ode
 import numpy.linalg as la
 import pdb
 import matplotlib.pyplot as plt
-import mpl_toolkits.mplot3d.axes3d as p3
-import matplotlib.animation as animation
+# import mpl_toolkits.mplot3d.axes3d as p3
+# import matplotlib.animation as animation
 import sys
 import seaborn as sns
+from mayavi import mlab
+
 
 class UAV(object):
 
@@ -168,23 +170,55 @@ if __name__ == "__main__":
 
   # fig, ax = plt.subplots()
   fig = plt.figure()
-  ax = p3.Axes3D(fig)
+  # ax = p3.Axes3D(fig)
+  xs = sim[:,-6]
+  ys = sim[:,-5]
+  zs = sim[:,-4]
+  mlab.figure(bgcolor=(0.839216, 0.839216, 0.839216))
+  pt = mlab.points3d(xs[0], ys[0], zs[0],color =  (1, 0, 0), opacity=0.5, scale_factor = 0.1)
+  path = mlab.plot3d(xs,ys,zs, color = (0.541176, 0.168627, 0.886275),tube_radius = 0.01, opacity=0.5)
 
+  xaz = mlab.plot3d([xs[0], xs[0]] ,[ys[0],ys[0]],[zs[0],zs[0]],color=(0,0,1),tube_radius = 0.01)
+  xax = mlab.plot3d([xs[0], xs[0]] ,[ys[0],ys[0]],[zs[0],zs[0]],color=(1,0,0),tube_radius = 0.01)
+  xay = mlab.plot3d([xs[0], xs[0]] ,[ys[0],ys[0]],[zs[0],zs[0]],color=(0,1,0),tube_radius = 0.01)
+  eul_ang = rot_eul(sim)
+  # @mlab.show
+  @mlab.animate(delay=10)
+  def anim():
+      f = mlab.gcf()
+      while True:
+          i = 0
+          for (x, y, z, angle) in zip(xs, ys, zs, sim[:,:9]):
+              pt.mlab_source.set(x=x, y=y, z=z)
+              ptx = angle.reshape((3,3)).dot([1,0,0])*0.2
+              ptx = [x,y,z] + ptx
+              xax.mlab_source.set(x=[x, ptx[0]] ,y=[y,ptx[1]],z=[z, ptx[2]])
+              ptx = angle.reshape((3,3)).dot([0,1,0])*0.2
+              xay.mlab_source.set(x=[x, x + ptx[0]] ,y=[y,y+ptx[1]],z=[z,z+ptx[2]])
+              ptx = angle.reshape((3,3)).dot([0,0,1])*0.2
+              xaz.mlab_source.set(x=[x, x + ptx[0]] ,y=[y,y+ptx[1]],z=[z,z+ptx[2]])
+              f.scene.render()
+              i += 1
+              yield
+
+  # Run the animation.
+  anim()
+  mlab.show()
   # x = np.arange(0, 2*np.pi, 0.01)
-  line, = ax.plot(sim[:,-6], sim[:,-5])
+  # line, = ax.plot(sim[:,-6], sim[:,-5])
 
-  def animate(i):
-    line.set_data(np.vstack([sim[:i,-6], sim[:i,-5]]))  # update the data
-    line.set_3d_properties(sim[:i,-4])
-    return line,
+  # def animate(i):
+  #   line.set_data(np.vstack([sim[:i,-6], sim[:i,-5]]))  # update the data
+  #   line.set_3d_properties(sim[:i,-4])
+  #   return line,
 
   # Setting the axes properties
-  ax.set_xlim3d([-1.0, 1.0])
-  ax.set_xlabel('X')
-  ax.set_ylim3d([-1.0, 1.0])
-  ax.set_ylabel('Y')
-  ax.set_zlim3d([0.0, 1.0])
-  ax.set_zlabel('Z')
+  # ax.set_xlim3d([-1.0, 1.0])
+  # ax.set_xlabel('X')
+  # ax.set_ylim3d([-1.0, 1.0])
+  # ax.set_ylabel('Y')
+  # ax.set_zlim3d([0.0, 1.0])
+  # ax.set_zlabel('Z')
   # Init only required for blitting to give a clean slate.
   # def init():
     # print(np.concatenate((x.T,np.ma.array(x, mask=True).T)).shape)
@@ -192,14 +226,15 @@ if __name__ == "__main__":
     # line.set_data(np.concatenate((x,np.ma.array(x, mask=True))))
     # line.set_3d_properties(x)
     # return line,
-  ani = animation.FuncAnimation(fig, animate, np.arange(N),
-                              interval=25, blit=False)
+  # ani = animation.FuncAnimation(fig, animate, np.arange(N),
+                              # interval=25, blit=False)
 
-  plt.figure()
-  plt.subplot(211)
-  plt.plot(t,sim[:,-6:-3])
-  plt.grid()
-  plt.subplot(212)
-  plt.plot(t,rot_eul(sim))
-  plt.grid()
-  plt.show()
+  # plt.figure()
+  # plt.subplot(211)
+  # plt.plot(t,sim[:,-6:-3])
+  # plt.grid()
+  # plt.subplot(212)
+  # plt.plot(t,rot_eul(sim))
+  # plt.grid()
+  # plt.show()
+  # plt.close()
