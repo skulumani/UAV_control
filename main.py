@@ -12,7 +12,6 @@ import sys
 import seaborn as sns
 from mayavi import mlab
 
-
 class UAV(object):
 
   def __init__(self, J, e3):
@@ -178,9 +177,17 @@ if __name__ == "__main__":
   pt = mlab.points3d(xs[0], ys[0], zs[0],color =  (1, 0, 0), opacity=0.5, scale_factor = 0.1)
   path = mlab.plot3d(xs,ys,zs, color = (0.541176, 0.168627, 0.886275),tube_radius = 0.01, opacity=0.5)
 
+  wx = np.linspace(-1,1,5)
+  wy = wx
+  [wx,wy] = np.meshgrid(wx,wy)
+  wz = -0.5*np.ones(wx.shape)
+  ground = mlab.mesh(wx,wy,wz,color=(0,0,0),representation='wireframe')
+
   xaz = mlab.plot3d([xs[0], xs[0]] ,[ys[0],ys[0]],[zs[0],zs[0]],color=(0,0,1),tube_radius = 0.01)
   xax = mlab.plot3d([xs[0], xs[0]] ,[ys[0],ys[0]],[zs[0],zs[0]],color=(1,0,0),tube_radius = 0.01)
   xay = mlab.plot3d([xs[0], xs[0]] ,[ys[0],ys[0]],[zs[0],zs[0]],color=(0,1,0),tube_radius = 0.01)
+  zipped = zip(xx,xy,xz)
+
   eul_ang = rot_eul(sim)
   # @mlab.show
   @mlab.animate(delay=10)
