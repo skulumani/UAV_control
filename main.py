@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 # import mpl_toolkits.mplot3d.axes3d as p3
 # import matplotlib.animation as animation
 import sys
-import seaborn as sns
+# import seaborn as sns
 from mayavi import mlab
+import trimesh
 
 class UAV(object):
 
