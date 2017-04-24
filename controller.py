@@ -1,4 +1,7 @@
 from __future__ import print_function, division, absolute_import
+
+from kinematics import attitude as att
+
 import numpy as np
 import numpy.linalg as la
 import pdb
@@ -170,15 +173,12 @@ def get_Rc(A, A_dot, A_2dot, b1d, b1d_dot, b1d_ddot):
     Rc_2dot = np.reshape( [b1c_2dot, ( np.cross(b3c_2dot, b1c)
         + np.cross(b3c_dot, b1c_dot) + np.cross(b3c_dot, b1c_dot)
         + np.cross(b3c, b1c_2dot) ), b3c_2dot],(3,3)).T
-    Wc = vee(Rc.T.dot(Rc_dot))
-    Wc_dot= vee( Rc_dot.T.dot(Rc_dot) + Rc.T.dot(Rc_2dot))
+    Wc = att.vee_map(Rc.T.dot(Rc_dot))
+    Wc_dot= att.vee_map( Rc_dot.T.dot(Rc_dot) + Rc.T.dot(Rc_2dot))
     return (Rc, Wc, Wc_dot)
 
-def vee(M):
-    return np.array([M[2,1], M[0,2], M[1,0]])
-
 def attitude_errors( R, Rd, W, Wd ):
-    eR = 0.5*vee(Rd.T.dot(R) - R.T.dot(Rd))
+    eR = 0.5* att.vee_map(Rd.T.dot(R) - R.T.dot(Rd))
   eW = W - R.T.dot(Rd.dot(Wd))
   return (eR, eW)
 
